@@ -66,13 +66,14 @@ stone_table = []
 timber_table = []
 ore_table = []
 
-might_conversor = {}
-time_conversor = {}
-food = {}
-stones = {}
-timber = {}
-ore = {}
-gold = {}
+might_dict = {}
+time_dict = {}
+food_dict = {}
+stone_dict = {}
+timber_dict = {}
+ore_dict = {}
+rss_dict = {}
+
 net_time = {}
 helped_time = {}
 VIP_time = {}
@@ -102,8 +103,8 @@ def find_titles():  # Finds the cells whose title is interesting (Might Bonus, O
         row += 1
 
 
-def assign_mights(dict_construction):  # It searches the 25 cells below the cell with the value "Might Bonus", which correspond to the original might earned when upgrading that building from level 1 to 25
-    construction_index = int(constructions.index(dict_construction))
+def assign_mights(func_construction):  # It searches the 25 cells below the cell with the value "Might Bonus", which correspond to the original might earned when upgrading that building from level 1 to 25
+    construction_index = int(constructions.index(func_construction))
     wb.active = construction_index
     mights = []
     might_cell = might_bonuses[construction_index]
@@ -124,8 +125,8 @@ def assign_mights(dict_construction):  # It searches the 25 cells below the cell
     return mights
 
 
-def assign_times(dict_time):  # It searches the 25 cells below the cell with the value "Original Time", which correspond to the original times for that building from level 1 to 25
-    construction_index = int(constructions.index(dict_time))
+def assign_times(func_construction):  # It searches the 25 cells below the cell with the value "Original Time", which correspond to the original times for that building from level 1 to 25
+    construction_index = int(constructions.index(func_construction))
     wb.active = construction_index
     times = []
     time_cell = original_times[construction_index]
@@ -146,115 +147,105 @@ def assign_times(dict_time):  # It searches the 25 cells below the cell with the
     return times
 
 
-def assign_foods(dict_food):  # It searches the 25 cells below the cell with the value "Food Cost", which correspond to the food_list for that building from level 1 to 25
-    construction_index = int(constructions.index(dict_food))
-    wb.active = construction_index
+def assign_foods(func_construction):  # It searches the 25 cells below the cell with the value "Food Cost", which correspond to the food_list for that building from level 1 to 25
     foods = []
-    error = 0
-    try:
-        food_cell = food_list[construction_index]
-        # finds the cell with "Food Cost" in the sheet with the name original_times
-        food_column = str(food_cell)[0]
-        food_row = int(food_cell[1:])
-        # separates the column and row to make iteration easier
-    except IndexError:
-        error += 1
-    for i in range(0, 25):
-        if error == 0:
-            food_row += 1
-            st_ring = wb.active[f'{food_column}{food_row}'].value
-            try:
-                clean_string = int(str(st_ring).replace(",", ""))
-            except ValueError:
-                clean_string = st_ring
-            foods.append(clean_string)
-        else:
+    construction_index = int(constructions.index(func_construction))
+    wb.active = construction_index
+    if int(constructions.index(func_construction)) == 7:  # Index 7 is "Farm", and it doesn't need food to improve, that messes with the indexes
+        for i in range(0, 25):
             foods.append(None)
-            error = 0
+        return foods
+    elif int(constructions.index(func_construction)) < 7:
+        food_cell = food_list[construction_index]
+    else:
+        food_cell = food_list[construction_index - 1]
+    food_column = str(food_cell)[0]
+    food_row = int(food_cell[1:])
+        # separates the column and row to make iteration easier
+    for i in range(0, 25):
+        food_row += 1
+        st_ring = wb.active[f'{food_column}{food_row}'].value
+        try:
+            clean_string = int(str(st_ring).replace(",", ""))
+        except ValueError:
+            clean_string = st_ring
+        foods.append(clean_string)
     return foods
 
 
-def assign_stones(dict_stone):  # It searches the 25 cells below the cell with the value "Stone Cost", which correspond to the food_list for that building from level 1 to 25
-    construction_index = int(constructions.index(dict_stone))
-    wb.active = construction_index
+def assign_stones(func_construction):  # It searches the 25 cells below the cell with the value "Food Cost", which correspond to the food_list for that building from level 1 to 25
     stones = []
-    error = 0
-    try:
-        stone_cell = stone_list[construction_index]
-        # finds the cell with "Food Cost" in the sheet with the name original_times
-        stone_column = str(stone_cell)[0]
-        stone_row = int(stone_cell[1:])
-        # separates the column and row to make iteration easier
-    except:
-        error += 1
-    for i in range(0, 25):
-        if error == 0:
-            stone_row += 1
-            st_ring = wb.active[f'{stone_column}{stone_row}'].value
-            try:
-                clean_string = int(str(st_ring).replace(",", ""))
-            except ValueError:
-                clean_string = st_ring
-            stones.append(clean_string)
-        else:
+    construction_index = int(constructions.index(func_construction))
+    wb.active = construction_index
+    if int(constructions.index(func_construction)) == 17:  # Index 17 is "Quarry", and it doesn't need stone to improve, that messes with the indexes
+        for i in range(0, 25):
             stones.append(None)
-            error = 0
+        return stones
+    elif int(constructions.index(func_construction)) < 17:
+        stone_cell = stone_list[construction_index]
+    else:
+        stone_cell = stone_list[construction_index - 1]
+    stone_column = str(stone_cell)[0]
+    stone_row = int(stone_cell[1:])
+        # separates the column and row to make iteration easier
+    for i in range(0, 25):
+        stone_row += 1
+        st_ring = wb.active[f'{stone_column}{stone_row}'].value
+        try:
+            clean_string = int(str(st_ring).replace(",", ""))
+        except ValueError:
+            clean_string = st_ring
+        stones.append(clean_string)
     return stones
 
 
-def assign_timbers(dict_timber):  # It searches the 25 cells below the cell with the value "Timber Cost", which correspond to the food_list for that building from level 1 to 25
+def assign_timbers(dict_timber):  # It searches the 25 cells below the cell with the value "Food Cost", which correspond to the food_list for that building from level 1 to 25
+    timbers = []
     construction_index = int(constructions.index(dict_timber))
     wb.active = construction_index
-    timbers = []
-    error = 0
-    try:
-        timber_cell = timber_list[construction_index]
-        # finds the cell with "Food Cost" in the sheet with the name original_times
-        timber_column = str(timber_cell)[0]
-        timber_row = int(timber_cell[1:])
-        # separates the column and row to make iteration easier
-    except:
-        error += 1
-    for i in range(0, 25):
-        if error == 0:
-            timber_row += 1
-            st_ring = wb.active[f'{timber_column}{timber_row}'].value
-            try:
-                clean_string = int(str(st_ring).replace(",", ""))
-            except ValueError:
-                clean_string = st_ring
-            timbers.append(clean_string)
-        else:
+    if int(constructions.index(dict_timber)) == 10:  # Index 10 is "Lumber_Mill", and it doesn't need timber to improve, that messes with the indexes
+        for i in range(0, 25):
             timbers.append(None)
-            error = 0
+        return timbers
+    elif int(constructions.index(dict_timber)) < 10:
+        timber_cell = timber_list[construction_index]
+    else:
+        timber_cell = timber_list[construction_index - 1]
+    timber_column = str(timber_cell)[0]
+    timber_row = int(timber_cell[1:])  # separates the column and row to make iteration easier
+    for i in range(0, 25):
+        timber_row += 1
+        st_ring = wb.active[f'{timber_column}{timber_row}'].value
+        try:
+            clean_string = int(str(st_ring).replace(",", ""))
+        except ValueError:
+            clean_string = st_ring
+        timbers.append(clean_string)
     return timbers
 
 
 def assign_ores(dict_ore):  # It searches the 25 cells below the cell with the value "Food Cost", which correspond to the food_list for that building from level 1 to 25
+    ores = []
     construction_index = int(constructions.index(dict_ore))
     wb.active = construction_index
-    ores = []
-    error = 0
-    try:
-        ore_cell = ore_list[construction_index]
-        # finds the cell with "Food Cost" in the sheet with the name original_times
-        ore_column = str(ore_cell)[0]
-        ore_row = int(ore_cell[1:])
-        # separates the column and row to make iteration easier
-    except:
-        error += 1
-    for i in range(0, 25):
-        if error == 0:
-            ore_row += 1
-            st_ring = wb.active[f'{ore_column}{ore_row}'].value
-            try:
-                clean_string = int(str(st_ring).replace(",", ""))
-            except ValueError:
-                clean_string = st_ring
-            ores.append(clean_string)
-        else:
+    if int(constructions.index(dict_ore)) == 13:  # Index 13 is "Mine", and it doesn't need ore to improve, that messes with the indexes
+        for i in range(0, 25):
             ores.append(None)
-            error = 0
+        return ores
+    elif int(constructions.index(dict_ore)) < 13:
+        ore_cell = ore_list[construction_index]
+    else:
+        ore_cell = ore_list[construction_index - 1]
+    ore_column = str(ore_cell)[0]
+    ore_row = int(ore_cell[1:])  # separates the column and row to make iteration easier
+    for i in range(0, 25):
+        ore_row += 1
+        st_ring = wb.active[f'{ore_column}{ore_row}'].value
+        try:
+            clean_string = int(str(st_ring).replace(",", ""))
+        except ValueError:
+            clean_string = st_ring
+        ores.append(clean_string)
     return ores
 
 
@@ -282,11 +273,11 @@ def translate_number(number):  # Translate an index into an excel column (only w
 
 
 def add_gear(gear):  # Take into account the construction gear, which makes constructions take less time
-    for i in time_conversor:
+    for i in time_dict:
         try:
-            net_time[i] = round((int(time_conversor[i]) / (float(gear) / 100 + 1)), 2)
+            net_time[i] = round((int(time_dict[i]) / (float(gear) / 100 + 1)), 2)
         except (ValueError, TypeError):
-            net_time[i] = time_conversor[i]
+            net_time[i] = time_dict[i]
 
 
 def add_helps(helps=30):  # Take into account the guildmates' help, which reduce the time of the construction. It can vary, so I will assume you get the helps instantaneously (it doesn't vary so much from reality)
@@ -316,3 +307,4 @@ def add_vip(VIP_LEVEL):  # Take into account the VIP level, which lets you finis
                 VIP_time[i] = round(int((helped_time[i]) - seconds_saved), 2)
         except (ValueError, TypeError):
             VIP_time[i] = helped_time[i]
+
